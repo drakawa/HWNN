@@ -372,7 +372,7 @@ class NodeLayer_in(nn.Module):
         self.node_op = NodeOp_in(in_channels, out_channels, stride)
 
     def forward(self, y):
-        y = torch.unsqueeze(y, -1)
+        # y = torch.unsqueeze(y, -1)
         y = self.node_op(y)
         return y
 
@@ -401,7 +401,7 @@ class NodeOp_in(nn.Module):
         # print(y.device)
         # y: [B, C, N, M, in_degree]
         # y = torch.matmul(y, self.agg_weight) # [B, C, N, M]
-        y = torch.squeeze(y, -1)
+        # y = torch.squeeze(y, -1)
         y = F.relu(y) # [B, C, N, M]
         y = self.conv(y) # [B, C_out, N, M]
         y = self.bn(y) # [B, C_out, N, M]
