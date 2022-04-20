@@ -1,0 +1,4 @@
+pths/
+data/
+*.py~
+__pycache__/
