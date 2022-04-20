@@ -50,12 +50,12 @@ class DataLoader:
 
 class EvalNet:
     def __init__(self):
-        self.net = None
-        self.criterion = None
-        self.optimizer = None
-        self.scheduler = None
-        self.net_name = None
-        self.num_epochs = None
+        self.net: nn.Module = None
+        self.criterion: nn.Module = None
+        self.optimizer: nn.Module = None
+        self.scheduler: nn.Module = None
+        self.net_name: str = None
+        self.num_epochs: int = None
 
     def train(self):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
