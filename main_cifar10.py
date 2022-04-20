@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from net import RWNN, ResNet50
+from gen_graph import GConfig, GenGs
 
 class DataLoader:
     def __init__(self):
@@ -142,7 +143,7 @@ class EvalNet:
         print(f"epoch {num_chkpt}: ")
         print(f"Average test loss: {test_loss / total:.8f}")
         print(f'Accuracy of the network on the 10000 test images: {correct / total:.8f}')
-        
+
 class EvalRWNN(EvalNet):
     def __init__(self):
         super().__init__()
@@ -174,8 +175,21 @@ class EvalResNet50(EvalNet):
         self.net_name = "resnet50"
         
 if __name__ == "__main__":
-    net = sys.argv[1]
-    mode = sys.argv[2]
+
+    nets = ["rwnn", "resnet50"]
+    modes = ["train", "test"]
+
+    parser = argparse.ArgumentParser(description='NN for CIFAR-10')
+    parser.add_argument('-n', '--net', type=str, help='Net name', choices=nets)
+    parser.add_argument('-m', '--mode', type=str, help='Mode for net', choices=modes)
+    parser.add_argument('-t', '--test_chkpt', default=1, type=int, help='chkpt index for test', required=False)
+
+    args = parser.parse_args()
+    print(args)
+    net, mode, test_chkpt = args.net, args.mode, args.test_chkpt
+
+    # net = sys.argv[1]
+    # mode = sys.argv[2]
 
     if net == "rwnn":
         eval_net = EvalRWNN()
@@ -185,6 +199,6 @@ if __name__ == "__main__":
     if mode == "train":
         eval_net.train()
     elif mode == "test":
-        test_chkpt = int(sys.argv[3])
+        # test_chkpt = int(sys.argv[3])
         eval_net.test(test_chkpt)
             
