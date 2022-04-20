@@ -111,26 +111,37 @@ class EvalNet:
         testloader = dataloader.test_loader()
                 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cpu")
         print(device)
         
-        PATH = "./pths/{}/cifar_net_{:0=3}.pth".format(self.net_name, test_chkpt)
+        net = net.to(device)
+        PATH = "./pths/{}/cifar_net_{:0=3}.pth".format(self.net_name, num_chkpt)
         net.load_state_dict(torch.load(PATH))
+
+        net.eval()
         
+        criterion = self.criterion.to(device)
+
         correct = 0
         total = 0
+        test_loss = 0.0
         # since we're not training, we don't need to calculate the gradients for our outputs
         with torch.no_grad():
             for data in testloader:
                 images, labels = data
-                # images, labels = images.to(device), labels.to(device)
+                images, labels = images.to(device), labels.to(device)
                 # calculate outputs by running images through the network
                 outputs = net(images)
+
+                test_loss += criterion(outputs, labels).item()
                 # the class with the highest energy is what we choose as prediction
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         
-        print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+        print(f"epoch {num_chkpt}: ")
+        print(f"Average test loss: {test_loss / total:.8f}")
+        print(f'Accuracy of the network on the 10000 test images: {correct / total:.8f}')
         
 class EvalRWNN(EvalNet):
     def __init__(self):
