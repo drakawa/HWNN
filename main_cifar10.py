@@ -14,6 +14,8 @@ from net import RWNN, ResNet50
 from gen_graph import GConfig, GenGs
 import argparse
 
+import os
+
 class DataLoader:
     def __init__(self):
         self.batch_size = 256
@@ -60,6 +62,11 @@ class EvalNet:
         self.num_epochs: int = None
 
     def train(self):
+
+        pths_path = "./pths/{}/".format(self.net_name)
+        if not os.path.isdir(pths_path):
+            os.mkdir(pths_path)
+
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print(device)
 
@@ -146,12 +153,14 @@ class EvalNet:
         print(f'Accuracy of the network on the 10000 test images: {correct / total:.8f}')
 
 class EvalRWNN(EvalNet):
-    def __init__(self):
+    def __init__(self, g_config: GConfig):
         super().__init__()
 
-        seed = 1
-        randstate = np.random.RandomState(seed)
-        Gs = [nx.random_regular_graph(4,32,randstate) for _ in range(3)]
+        gen_Gs = GenGs(g_config)
+        Gs, name = gen_Gs.gen_Gs()
+        # seed = 1
+        # randstate = np.random.RandomState(seed)
+        # Gs = [nx.random_regular_graph(4,32,randstate) for _ in range(3)]
         
         self.net = RWNN(78,10,3,Gs)
         self.num_epochs = 100
@@ -160,7 +169,7 @@ class EvalRWNN(EvalNet):
         self.optimizer = optim.SGD(self.net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.num_epochs)
 
-        self.net_name = "rwnn"
+        self.net_name = "rwnn_%s" % name
         
 class EvalResNet50(EvalNet):
     def __init__(self):
@@ -178,22 +187,37 @@ class EvalResNet50(EvalNet):
 if __name__ == "__main__":
 
     nets = ["rwnn", "resnet50"]
+    graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus"]
     modes = ["train", "test"]
 
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
     parser.add_argument('-n', '--net', type=str, help='Net name', choices=nets)
+    parser.add_argument('-g', '--graph_rwnn', type=str, help='Graph name used in RWNN', choices=graphs_rwnn, required=False)
+    parser.add_argument('-s', '--seed', type=int, help='Random seed used in RWNN', required=False)
     parser.add_argument('-m', '--mode', type=str, help='Mode for net', choices=modes)
     parser.add_argument('-t', '--test_chkpt', default=1, type=int, help='chkpt index for test', required=False)
 
     args = parser.parse_args()
     print(args)
-    net, mode, test_chkpt = args.net, args.mode, args.test_chkpt
+    net, graph_rwnn, seed, mode, test_chkpt = args.net, args.graph_rwnn, args.seed, args.mode, args.test_chkpt
 
     # net = sys.argv[1]
     # mode = sys.argv[2]
 
     if net == "rwnn":
-        eval_net = EvalRWNN()
+        if graph_rwnn == "rrg":
+            g_config = GConfig(n=32,d=4,s=seed,name="rrg")
+        elif graph_rwnn == "ws":
+            g_config = GConfig(n=32,d=4,p=0.75,s=seed,name="ws")
+        elif graph_rwnn == "symsa":
+            g_config = GConfig(n=32,d=4,g=4,s=seed,name="symsa")
+        elif graph_rwnn == "2dtorus":
+            g_config = GConfig(n=8,m=4,name="2dtorus")
+        else:
+            print("somethings wrong in rwnn config")
+            exit(1)
+
+        eval_net = EvalRWNN(g_config)
     elif net == "resnet50":
         eval_net = EvalResNet50()
         
