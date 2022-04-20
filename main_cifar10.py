@@ -12,6 +12,7 @@ import numpy as np
 
 from net import RWNN, ResNet50
 from gen_graph import GConfig, GenGs
+import argparse
 
 class DataLoader:
     def __init__(self):
