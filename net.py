@@ -465,6 +465,7 @@ if __name__ == "__main__":
 
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
 
     x = torch.randn(4,256,56,56)
     print(x.size())
