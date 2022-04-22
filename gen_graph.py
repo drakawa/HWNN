@@ -18,6 +18,9 @@ class GenGs:
         self.num_graphs = 3
 
     def gen_Gs(self):
+        if self.config.s:
+            randstate = np.random.RandomState(self.config.s)
+
         if self.config.name == "2dtorus":
             G = nx.grid_graph([self.config.n, self.config.m], periodic=True)
             G_nodes = sorted(list(G.nodes()))
@@ -28,12 +31,10 @@ class GenGs:
             name = f"2dtorus_{self.config.m}_{self.config.m}"
 
         elif self.config.name == "rrg":
-            randstate = np.random.RandomState(self.config.s)
             Gs = [nx.random_regular_graph(self.config.d, self.config.n, randstate) for _ in range(self.num_graphs)]
             name = f"rrg_{self.config.d}_{self.config.n}_{self.config.s}"
 
         elif self.config.name == "ws":
-            randstate = np.random.RandomState(self.config.s)
             Gs = [nx.connected_watts_strogatz_graph(self.config.n, self.config.d, self.config.p, seed=randstate) for _ in range(self.num_graphs)]
             name = f"ws_{self.config.n}_{self.config.d}_{self.config.p}_{self.config.s}"
 
@@ -44,8 +45,6 @@ class GenGs:
             Gs = [nx.read_edgelist(edgelist, nodetype=int) for edgelist in edgelists]
             # print(Gs[0].edges())
             name = f"symsa_{self.config.n}_{self.config.d}_{self.config.g}_{self.config.s}"
-
-        # elif self.config.
 
         else:
             print("Invalid config:", self.config)
@@ -60,11 +59,17 @@ if __name__ == "__main__":
     print(Gs, name)
     print(Gs[0].edges())
 
+    print("rrg")
     g_config = GConfig(n=32,d=4,s=1,name="rrg")
     gen_Gs = GenGs(g_config)
     Gs, name = gen_Gs.gen_Gs()
     print(Gs, name)
     print(Gs[0].edges())
+    print(Gs[1].edges())
+    print(Gs[2].edges())
+    print(Gs[0][0])
+    print(Gs[1][0])
+    print(Gs[2][0])
 
     g_config = GConfig(n=32,d=4,p=0.75,s=1,name="ws")
     gen_Gs = GenGs(g_config)
