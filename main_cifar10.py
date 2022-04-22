@@ -65,7 +65,7 @@ class EvalNet:
 
         pths_path = "./pths/{}/".format(self.net_name)
         if not os.path.isdir(pths_path):
-            os.mkdir(pths_path)
+            os.makedirs(pths_path)
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print(device)
