@@ -410,7 +410,9 @@ class NodeOp_in(nn.Module):
 class NodeOp(nn.Module):
     def __init__(self, in_degree, in_channels, out_channels, stride):
         super(NodeOp, self).__init__()
-        self.agg_weight = nn.Parameter(torch.zeros(in_degree, requires_grad=True))
+        self.single_in = in_degree == 1
+        if not self.single_in:
+            self.agg_weight = nn.Parameter(torch.zeros(in_degree, requires_grad=True))
         # print(self.agg_weight.device)
         self.conv = SeparableConv2d(in_channels, out_channels, kernels_per_layer=1, kernel_size=3, stride=stride, padding=1)
         self.bn = nn.BatchNorm2d(out_channels)
@@ -418,7 +420,10 @@ class NodeOp(nn.Module):
     def forward(self, y):
         # print(y.device)
         # y: [B, C, N, M, in_degree]
-        y = torch.matmul(y, torch.sigmoid(self.agg_weight)) # [B, C, N, M]
+        if self.single_in:
+            y = torch.squeeze(y, -1)
+        else:
+            y = torch.matmul(y, torch.sigmoid(self.agg_weight)) # [B, C, N, M]
         # y = torch.matmul(y, self.agg_weight) # [B, C, N, M]
         y = F.relu(y) # [B, C, N, M]
         y = self.conv(y) # [B, C_out, N, M]
