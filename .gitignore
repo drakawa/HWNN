@@ -2,3 +2,4 @@ pths/
 data/
 *.py~
 __pycache__/
+nohup.out
