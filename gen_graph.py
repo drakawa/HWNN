@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 def reorder_G(G, method, rev=False):
-    print("reorder_G:", G.nodes(), G.edges())
+    # print("reorder_G:", G.nodes(), G.edges())
     center = np.random.choice(nx.center(G))
     G_nodes = sorted(list(G.nodes()))
 
