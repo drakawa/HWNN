@@ -189,17 +189,20 @@ if __name__ == "__main__":
     nets = ["rwnn", "resnet50"]
     graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus"]
     modes = ["train", "test"]
+    methods = ["random", "bfs", "dfs"]
 
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
     parser.add_argument('-n', '--net', type=str, help='Net name', choices=nets)
     parser.add_argument('-g', '--graph_rwnn', type=str, help='Graph name used in RWNN', choices=graphs_rwnn, required=False)
     parser.add_argument('-s', '--seed', type=int, help='Random seed used in RWNN', required=False)
+    parser.add_argument('-r', '--reorder_method', type=str, help='Mode for reorder labels', choices=methods, required=False)
+    parser.add_argument('--rev', action='store_true', help='labels reversed')
     parser.add_argument('-m', '--mode', type=str, help='Mode for net', choices=modes)
     parser.add_argument('-t', '--test_chkpt', default=1, type=int, help='chkpt index for test', required=False)
 
     args = parser.parse_args()
     print(args)
-    net, graph_rwnn, seed, mode, test_chkpt = args.net, args.graph_rwnn, args.seed, args.mode, args.test_chkpt
+    net, graph_rwnn, seed, mode, test_chkpt, reorder_method, rev = args.net, args.graph_rwnn, args.seed, args.mode, args.test_chkpt, args.reorder_method, args.rev
 
     # net = sys.argv[1]
     # mode = sys.argv[2]
@@ -216,6 +219,12 @@ if __name__ == "__main__":
         else:
             print("somethings wrong in rwnn config")
             exit(1)
+
+        if reorder_method:
+            g_config.method = reorder_method
+
+        if rev:
+            g_config.rev = rev
 
         eval_net = EvalRWNN(g_config)
     elif net == "resnet50":
