@@ -1,0 +1,26 @@
+graphs:
+- ws
+nets:
+- rwnn
+reorder_method_revs:
+- - random
+  - false
+- - bfs
+  - false
+- - dfs
+  - false
+- - bfs
+  - true
+- - dfs
+  - true
+seeds:
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
