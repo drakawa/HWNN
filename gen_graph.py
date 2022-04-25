@@ -6,7 +6,8 @@ import pandas as pd
 
 def reorder_G(G, method, rev=False):
     # print("reorder_G:", G.nodes(), G.edges())
-    center = np.random.choice(nx.center(G))
+    center = np.random.choice(nx.barycenter(G))
+    print("centers:", nx.barycenter(G))
     G_nodes = sorted(list(G.nodes()))
 
     if method == "random":
@@ -100,6 +101,7 @@ class GenGs:
                 exit(1)
 
             if self.config.method:
+                print("call_method")
                 Gs = [reorder_G(G, self.config.method, self.config.rev) for G in Gs]
 
             pd.to_pickle(Gs, graph_path)
@@ -155,3 +157,8 @@ if __name__ == "__main__":
     print(Gs, name)
     print(Gs[0].edges())
 
+    g_config = GConfig(n=32,d=4,s=3,name="rrg",method="bfs",rev=True)
+    gen_Gs = GenGs(g_config)
+    Gs, name = gen_Gs.gen_Gs()
+    print(Gs, name)
+    print(Gs[0].edges())
