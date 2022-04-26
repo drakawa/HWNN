@@ -15,6 +15,7 @@ from gen_graph import GConfig, GenGs
 import argparse
 
 import os
+import pandas as pd
 
 class DataLoader:
     def __init__(self):
@@ -166,6 +167,7 @@ class EvalRWNN(EvalNet):
 
         gen_Gs = GenGs(g_config)
         Gs, name = gen_Gs.gen_Gs()
+        self.Gs, self.name = Gs, name
         # seed = 1
         # randstate = np.random.RandomState(seed)
         # Gs = [nx.random_regular_graph(4,32,randstate) for _ in range(3)]
@@ -178,7 +180,71 @@ class EvalRWNN(EvalNet):
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.num_epochs)
 
         self.net_name = "rwnn_%s" % name
-        
+
+    def draw(self):
+        figs_path = "./figs/{}/".format(self.net_name)
+        if not os.path.isdir(figs_path):
+            os.makedirs(figs_path)
+
+        layDAG = nx.DiGraph()
+        layDAG.add_node((-1,-1))
+
+        DAGs = [nx.DiGraph() for _ in self.Gs]
+        for dag_idx, (DAG, G) in enumerate(zip(DAGs, self.Gs)):
+            DAG.add_nodes_from([(dag_idx,n) for n in G.nodes()])
+            for i, j in G.edges():
+                i,j = sorted([i,j])
+                DAG.add_edge((dag_idx,i),(dag_idx,j))
+
+            layDAG = nx.compose(layDAG, DAG)
+
+            in_nodes = [n for n in DAG.nodes() if DAG.in_degree(n) == 0]
+            out_nodes = [n for n in DAG.nodes() if DAG.out_degree(n) == 0]
+
+            enter_node = (dag_idx-1, -1)
+            exit_node = (dag_idx, -1)
+
+            for in_node in in_nodes:
+                layDAG.add_edge(enter_node, in_node)
+            for out_node in out_nodes:
+                layDAG.add_edge(out_node, exit_node)
+
+        for dag_idx, DAG in enumerate(DAGs):
+            # draw a DAG
+            plt.cla()
+            plt.figure(figsize=(15,15))
+            pos = nx.drawing.nx_agraph.graphviz_layout(DAG, prog="dot")
+            nx.draw_networkx_nodes(DAG, pos, node_color="lightblue")
+            nx.draw_networkx_edges(
+                DAG, pos,
+                # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
+            )
+
+            plt.axis("off")
+            plt.tight_layout()
+            plt.savefig(os.path.join(figs_path, "DAG_{}_{}.png".format(self.name, dag_idx)))
+            plt.savefig(os.path.join(figs_path, "DAG_{}_{}.eps".format(self.name, dag_idx)))
+            plt.savefig(os.path.join(figs_path, "DAG_{}_{}.svg".format(self.name, dag_idx)))
+            plt.show()
+
+
+        # draw a layers
+        plt.cla()
+        plt.figure(figsize=(15,30))
+        pos = nx.drawing.nx_agraph.graphviz_layout(layDAG, prog="dot")
+        nx.draw_networkx_nodes(layDAG, pos, node_color="lightblue")
+        nx.draw_networkx_edges(
+            layDAG, pos,
+            # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
+        )
+
+        plt.axis("off")
+        plt.tight_layout()
+        plt.savefig(os.path.join(figs_path, "layers_{}.png".format(self.name)))
+        plt.savefig(os.path.join(figs_path, "layers_{}.eps".format(self.name)))
+        plt.savefig(os.path.join(figs_path, "layers_{}.svg".format(self.name)))
+        plt.show()
+
 class EvalResNet50(EvalNet):
     def __init__(self):
         super().__init__()
@@ -196,7 +262,7 @@ if __name__ == "__main__":
 
     nets = ["rwnn", "resnet50"]
     graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus"]
-    modes = ["train", "test", "param"]
+    modes = ["train", "test", "param", "draw"]
     methods = ["random", "bfs", "dfs"]
 
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
@@ -245,4 +311,10 @@ if __name__ == "__main__":
         eval_net.test(test_chkpt)
     elif mode == "param":
         eval_net.param()
+    elif mode == "draw":
+        if net != "rwnn":
+            print("you cannot draw for net:", net)
+            exit(1)
+        else:
+            eval_net.draw()
             
