@@ -152,6 +152,14 @@ class EvalNet:
         print(f"Average test loss: {test_loss / total:.8f}")
         print(f'Accuracy of the network on the 10000 test images: {correct / total:.8f}')
 
+    def param(self):
+        params = 0
+        for p in self.net.parameters():
+            if p.requires_grad:
+                params += p.numel()
+                
+        print(params)  # 121898
+
 class EvalRWNN(EvalNet):
     def __init__(self, g_config: GConfig):
         super().__init__()
@@ -188,7 +196,7 @@ if __name__ == "__main__":
 
     nets = ["rwnn", "resnet50"]
     graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus"]
-    modes = ["train", "test"]
+    modes = ["train", "test", "param"]
     methods = ["random", "bfs", "dfs"]
 
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
@@ -235,4 +243,6 @@ if __name__ == "__main__":
     elif mode == "test":
         # test_chkpt = int(sys.argv[3])
         eval_net.test(test_chkpt)
+    elif mode == "param":
+        eval_net.param()
             
