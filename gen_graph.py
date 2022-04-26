@@ -52,7 +52,7 @@ class GenGs:
             randstate = np.random.RandomState(self.config.s)
 
         if self.config.name == "2dtorus":
-            name = f"2dtorus_{self.config.m}_{self.config.m}"
+            name = f"2dtorus_{self.config.n}_{self.config.m}"
         elif self.config.name == "rrg":
             name = f"rrg_{self.config.d}_{self.config.n}_{self.config.s}"
         elif self.config.name == "ws":
