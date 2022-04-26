@@ -272,7 +272,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--reorder_method', type=str, help='Mode for reorder labels', choices=methods, required=False)
     parser.add_argument('--rev', action='store_true', help='labels reversed')
     parser.add_argument('-m', '--mode', type=str, help='Mode for net', choices=modes)
-    parser.add_argument('-t', '--test_chkpt', default=1, type=int, help='chkpt index for test', required=False)
+    parser.add_argument('-t', '--test_chkpt', default=100, type=int, help='chkpt index for test', required=False)
 
     args = parser.parse_args()
     print(args)
