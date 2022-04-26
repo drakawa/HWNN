@@ -261,7 +261,7 @@ class EvalResNet50(EvalNet):
 if __name__ == "__main__":
 
     nets = ["rwnn", "resnet50"]
-    graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus"]
+    graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus", "bipartite"]
     modes = ["train", "test", "param", "draw"]
     methods = ["random", "bfs", "dfs"]
 
@@ -290,6 +290,9 @@ if __name__ == "__main__":
             g_config = GConfig(n=32,d=4,g=4,s=seed,name="symsa")
         elif graph_rwnn == "2dtorus":
             g_config = GConfig(n=8,m=4,name="2dtorus")
+        elif graph_rwnn == "bipartite":
+            g_config = GConfig(n=32,d=4,s=seed,name="bipartite")
+
         else:
             print("somethings wrong in rwnn config")
             exit(1)
