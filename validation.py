@@ -195,9 +195,9 @@ def get_plots(results_dd):
     # ax.set_ylabel("Elapsed time [s]")
     # ax.set_ylim([0.0,70])
 
-        plt.savefig("%s.eps" % val, transparent=False)
-        plt.savefig("%s.png" % val, transparent=False)
-        plt.savefig("%s.svg" % val, transparent=True)
+        plt.savefig("figs/%s.eps" % val, transparent=False)
+        plt.savefig("figs/%s.png" % val, transparent=False)
+        plt.savefig("figs/%s.svg" % val, transparent=True)
 
     return plots_dd
 
@@ -216,3 +216,21 @@ if __name__ == "__main__":
 
     plots_dd = get_plots(accum_results)
     # print(plots_dd)
+
+    # resnet50_acc = pd.DataFrame(accum_results["resnet50"]["acc"]).loc[:,:].describe().loc["mean"]
+    # rrg_acc = pd.DataFrame(accum_results["rrg"]["acc"]).loc[:,:].describe().loc["mean"]
+    # ws_acc = pd.DataFrame(accum_results["ws"]["acc"]).loc[:,:].describe().loc["mean"]
+
+    # print(resnet50_acc)
+    # print(rrg_acc)
+
+    # rrg_resnet_rate = rrg_acc / resnet50_acc
+
+    # pd.set_option('display.max_rows', None)
+    # pd.set_option('display.max_columns', None)
+    # print(rrg_resnet_rate[50:])
+
+    # rrg_ws_rate = rrg_acc / ws_acc
+    # print(rrg_ws_rate)
+
+    # print(rrg_acc)
