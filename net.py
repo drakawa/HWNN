@@ -453,9 +453,9 @@ if __name__ == "__main__":
     print(y.size())
     
     print("ResNet50")
-    x = torch.randn(256,3,32,32)
+    x = torch.randn(1,3,224,224)
     print(x.size())
-    net = ResNet50(num_classes=3)
+    net = ResNet50(num_classes=1000)
     params = 0
     for p in net.parameters():
         # print(p)
@@ -577,10 +577,10 @@ if __name__ == "__main__":
 
     print("RWNN")
     Gs = [nx.random_regular_graph(4,32,randstate) for _ in range(3)]
-    x = torch.randn(256,3,32,32) # 1 input node
+    x = torch.randn(1,3,224,224) # 1 input node
     print(x.size())
     
-    net = RWNN(78,10,3,Gs)
+    net = RWNN(78,1000,3,Gs)
 
     x = x.to(device)
     net = net.to(device)
