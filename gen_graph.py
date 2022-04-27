@@ -100,6 +100,9 @@ class GenGs:
             name = f"symsa_{self.config.n}_{self.config.d}_{self.config.g}_{self.config.s}"
         elif self.config.name == "bipartite":
             name = f"bipartite_{self.config.n}_{self.config.d}_{self.config.s}"
+        elif self.config.name == "complete":
+            name = f"complete_{self.config.n}"
+
         else:
             print("Invalid config:", self.config)
             exit(1)
@@ -139,6 +142,9 @@ class GenGs:
 
             elif self.config.name == "bipartite":
                 Gs = [gen_bipartiteG(self.config.n, self.config.d, randstate) for _ in range(self.num_graphs)]
+
+            elif self.config.name == "complete":
+                Gs = [nx.complete_graph(self.config.n) for _ in range(self.num_graphs)]
 
             else:
                 print("Invalid config:", self.config)
@@ -208,6 +214,12 @@ if __name__ == "__main__":
     print(Gs[0].edges())
 
     g_config = GConfig(n=32,d=4,s=3,name="bipartite")
+    gen_Gs = GenGs(g_config)
+    Gs, name = gen_Gs.gen_Gs()
+    print(Gs, name)
+    print(Gs[0].edges())
+
+    g_config = GConfig(n=32,name="complete")
     gen_Gs = GenGs(g_config)
     Gs, name = gen_Gs.gen_Gs()
     print(Gs, name)
