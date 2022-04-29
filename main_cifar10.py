@@ -181,11 +181,7 @@ class EvalRWNN(EvalNet):
 
         self.net_name = "rwnn_%s" % name
 
-    def draw(self):
-        figs_path = "./figs/{}/".format(self.net_name)
-        if not os.path.isdir(figs_path):
-            os.makedirs(figs_path)
-
+    def _gen_dag(self):
         layDAG = nx.DiGraph()
         layDAG.add_node((-1,-1))
 
@@ -208,6 +204,15 @@ class EvalRWNN(EvalNet):
                 layDAG.add_edge(enter_node, in_node)
             for out_node in out_nodes:
                 layDAG.add_edge(out_node, exit_node)
+
+        return DAGs, layDAG
+
+    def draw(self):
+        figs_path = "./figs/{}/".format(self.net_name)
+        if not os.path.isdir(figs_path):
+            os.makedirs(figs_path)
+
+        DAGs, layDAG = self._gen_dag()
 
         for dag_idx, DAG in enumerate(DAGs):
             # draw a DAG
