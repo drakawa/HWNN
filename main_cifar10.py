@@ -18,6 +18,8 @@ import os
 import pandas as pd
 
 from collections import defaultdict as dd
+from functools import reduce
+import itertools as it
 
 class DataLoader:
     def __init__(self):
@@ -278,7 +280,19 @@ class EvalRWNN(EvalNet):
 
             return new_result
 
-        print(sorted(_count_len(DAGs[0]).items()))
+        len_DAGs = [_count_len(DAG) for DAG in DAGs]
+        
+        def _accum_dds(dd_a, dd_b):
+            result = dd(int)
+            for (ka, va), (kb, vb) in it.product(dd_a.items(), dd_b.items()):
+                result[ka + kb] += va * vb
+            return result
+
+        len_layDAG = reduce(_accum_dds, len_DAGs)
+
+        for len_DAG in len_DAGs:
+            print(sorted(len_DAG.items()))
+        print(sorted(len_layDAG.items()))
 
 class EvalResNet50(EvalNet):
     def __init__(self):
