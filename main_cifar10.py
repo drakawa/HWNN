@@ -17,6 +17,8 @@ import argparse
 import os
 import pandas as pd
 
+from collections import defaultdict as dd
+
 class DataLoader:
     def __init__(self):
         self.batch_size = 256
@@ -250,6 +252,34 @@ class EvalRWNN(EvalNet):
         plt.savefig(os.path.join(figs_path, "layers_{}.svg".format(self.name)))
         plt.show()
 
+    def length(self):
+        figs_path = "./figs/{}/".format(self.net_name)
+        if not os.path.isdir(figs_path):
+            os.makedirs(figs_path)
+
+        DAGs, layDAG = self._gen_dag()
+
+        def _count_len(DiG: nx.DiGraph):
+            preds = {n: list(DiG.predecessors(n)) for n in DiG.nodes()}
+            result = dd(lambda: dd(int))
+            for n in sorted(DiG.nodes()):
+                if len(preds[n]) == 0:
+                    result[n][1] = 1
+                else:
+                    for pred in preds[n]:
+                        for k in result[pred].keys():
+                            result[n][k+1] += result[pred][k]
+
+            out_nodes = [n for n in DiG.nodes() if len(DiG[n]) == 0]
+            new_result = dd(int)
+            for out_node in out_nodes:
+                for k in result[out_node].keys():
+                    new_result[k] += result[out_node][k]
+
+            return new_result
+
+        print(sorted(_count_len(DAGs[0]).items()))
+
 class EvalResNet50(EvalNet):
     def __init__(self):
         super().__init__()
@@ -267,7 +297,7 @@ if __name__ == "__main__":
 
     nets = ["rwnn", "resnet50"]
     graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus", "bipartite", "complete"]
-    modes = ["train", "test", "param", "draw"]
+    modes = ["train", "test", "param", "draw", "length"]
     methods = ["random", "bfs", "dfs"]
 
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
@@ -327,4 +357,10 @@ if __name__ == "__main__":
             exit(1)
         else:
             eval_net.draw()
+    elif mode == "length":
+        if net != "rwnn":
+            print("you cannot calculate length for net:", net)
+            exit(1)
+        else:
+            eval_net.length()
             
