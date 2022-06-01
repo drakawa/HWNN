@@ -12,7 +12,7 @@ def to_dag(G):
 
 if __name__ == "__main__":
     print("hoge")
-    n_node = 5
+    n_node = 8
     G = nx.complete_graph(n_node)
     DAG = to_dag(G)
     print(DAG.edges())
@@ -23,8 +23,12 @@ if __name__ == "__main__":
     print(in_nodes, out_nodes)
 
     for s, t in it.product(in_nodes, out_nodes):
-        asp = nx.all_simple_paths(DAG, source=s, target=t)
-        print(list(asp))
+        asps = nx.all_simple_paths(DAG, source=s, target=t)
+        for asp in asps:
+            print(asp)
+        # print(list(asps))
+
+    exit(1)
 
     print(nx.betweenness_centrality(DAG, endpoints=True))
     print(nx.edge_betweenness_centrality(DAG))
