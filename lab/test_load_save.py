@@ -38,6 +38,8 @@ class GraphLayer(nn.Module):
                 # print("new_y.size():", new_y.size())
                 new_outputs[n] = self.layers["{}".format(n)](new_y, step)
             outputs = new_outputs
+            print("step:", step)
+            print(outputs[0][0])
 
         y = torch.stack(list([outputs[i] for i in self.nodes]), dim=-1)
         # print(y.size())
@@ -71,7 +73,9 @@ class RecNodeLayer(nn.Module):
             # y = torch.matmul(y, torch.sigmoid(self.params["input"]))
             y *= torch.sigmoid(self.params["input"])
         else:
-            y = torch.matmul(y, torch.sigmoid(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1)))
+            tmp_weight = torch.sigmoid(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1))
+            tmp_weight /= torch.sum(tmp_weight)
+            y = torch.matmul(y, tmp_weight)
 
         identity = y.clone()
 
@@ -213,8 +217,10 @@ print(x.size())
 y = net(x, 1)
 print(y.size())
 
-net = GraphLayer(64,5,nx.random_regular_graph(3,8,1))
-x = torch.randn(7,64,16,16)
+# net = GraphLayer(64,5,nx.random_regular_graph(3,8,1))
+# x = torch.randn(7,64,16,16)
+net = GraphLayer(4,20,nx.random_regular_graph(3,8,1))
+x = torch.randn(1,4,64,64)
 
 net = net.to(device)
 x = x.to(device)
