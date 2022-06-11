@@ -615,3 +615,22 @@ if __name__ == "__main__":
     # # net.to(device)
 
     # # summary(net, (3, 32, 32))
+
+    x = torch.randn(4,256,56,56) # 1 input node
+    net = NodeLayer_in(in_channels=256, out_channels=256)
+    net = net.to(device)
+    x = x.to(device)
+
+    for _ in range(20):
+        x = net(x)
+        print(x.size(), x[0][0])
+
+    x = torch.randn(4,256,56,56)
+    net = Block_ppc(in_channels=256)
+    x = x.to(device)
+    net = net.to(device)
+
+    for _ in range(20):
+        x = net(x)
+        print(x.size(), x[0][0])
+
