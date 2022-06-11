@@ -35,10 +35,12 @@ class GraphLayer(nn.Module):
             for n in self.nodes:
                 # new_y = torch.cat(tuple([outputs[n]] + [outputs[i] for i in self.nbrs_odict[n]]), dim=-1)
                 new_y = torch.stack(list([outputs[n]] + [outputs[i] for i in self.nbrs_odict[n]]), dim=-1)
-                print("new_y.size():", new_y.size())
+                # print("new_y.size():", new_y.size())
                 new_outputs[n] = self.layers["{}".format(n)](new_y, step)
             outputs = new_outputs
 
+        y = torch.stack(list([outputs[i] for i in self.nodes]), dim=-1)
+        # print(y.size())
         y = torch.mean(y, dim=-1)
         return y
 
@@ -225,3 +227,4 @@ for p in net.parameters():
 print(params)  # 121898
 
 y = net(x)
+print(y.size())
