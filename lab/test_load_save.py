@@ -69,12 +69,14 @@ class RecNodeLayer(nn.Module):
         pass
 
     def forward(self, y, step):
-        if step == 0:
-            # y = torch.matmul(y, torch.sigmoid(self.params["input"]))
-            y *= torch.sigmoid(self.params["input"])
-        else:
-            tmp_weight = torch.sigmoid(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1))
-            tmp_weight /= torch.sum(tmp_weight)
+        # if step == 0:
+        #     # y = torch.matmul(y, torch.sigmoid(self.params["input"]))
+        #     y *= torch.sigmoid(self.params["input"])
+        # else:
+        if step > 0:
+            # tmp_weight = torch.sigmoid(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1))
+            # tmp_weight /= torch.sum(tmp_weight)
+            tmp_weight = F.softmax(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1))
             y = torch.matmul(y, tmp_weight)
 
         identity = y.clone()
