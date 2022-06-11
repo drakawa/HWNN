@@ -4,6 +4,107 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import networkx as nx
+
+from collections import OrderedDict as od
+
+class GraphLayer(nn.Module):
+    def __init__(self, channels, n_steps, G: nx.Graph):
+        super(GraphLayer, self).__init__()
+
+        self.n_steps = n_steps
+        self.nbrs_odict = od()
+        self.nodes = list(sorted(G.nodes()))
+
+        for n in self.nodes:
+            self.nbrs_odict[n] = list(sorted(G[n]))
+
+        self.layers = nn.ModuleDict({})
+        for n in sorted(self.nodes):
+            self.layers["{}".format(n)] = RecNodeLayer(n, self.nbrs_odict[n], channels)
+
+    def forward(self, y):
+        # step 0
+        outputs = od()
+        for n in self.nodes:
+            outputs[n] = self.layers["{}".format(n)](y, 0)
+
+        # step 1 ~ (n_steps-1)
+        for step in range(1, self.n_steps):
+            new_outputs = od()
+            for n in self.nodes:
+                # new_y = torch.cat(tuple([outputs[n]] + [outputs[i] for i in self.nbrs_odict[n]]), dim=-1)
+                new_y = torch.stack(list([outputs[n]] + [outputs[i] for i in self.nbrs_odict[n]]), dim=-1)
+                print("new_y.size():", new_y.size())
+                new_outputs[n] = self.layers["{}".format(n)](new_y, step)
+            outputs = new_outputs
+
+        y = torch.mean(y, dim=-1)
+        return y
+
+class RecNodeLayer(nn.Module):
+    def __init__(self, node_id, neighbors, channels, stride=1):
+        super(RecNodeLayer, self).__init__()
+        self.node_id = node_id
+        self.neighbors = neighbors
+
+        self.params = nn.ParameterDict({})
+
+        self.params["input"] = nn.Parameter(torch.zeros(1, requires_grad=True))
+        self.params["{}".format(self.node_id)] = nn.Parameter(torch.zeros(1, requires_grad=True))    
+        for nbr in self.neighbors:
+            self.params["{}".format(nbr)] = nn.Parameter(torch.zeros(1, requires_grad=True))
+
+        # self.agg_weight = torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=0)
+        # print("agg_weight:")
+        # print(self.agg_weight)
+
+        self.conv = SeparableConv2d(channels,channels, kernels_per_layer=1, kernel_size=3, stride=stride, padding=1)
+        self.bn = nn.BatchNorm2d(channels)
+
+        pass
+
+    def forward(self, y, step):
+        if step == 0:
+            # y = torch.matmul(y, torch.sigmoid(self.params["input"]))
+            y *= torch.sigmoid(self.params["input"])
+        else:
+            y = torch.matmul(y, torch.sigmoid(torch.cat((self.params["{}".format(self.node_id)], *[self.params["{}".format(nbr)] for nbr in self.neighbors]), dim=-1)))
+
+        identity = y.clone()
+
+        y = F.relu(y)
+        y = self.conv(y)
+        y = self.bn(y)
+        y += identity
+
+        # y = self.conv(y)
+        # y = self.bn(y)
+        # y = F.relu(y)
+        # y += identity
+
+        # y = self.conv(y)
+        # y = self.bn(y)
+        # y += identity
+        # y = F.relu(y)
+
+        return y
+        
+
+class SeparableConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, kernels_per_layer, kernel_size=1, stride=1, padding=0):
+        super(SeparableConv2d,self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, in_channels*kernels_per_layer, kernel_size=kernel_size, stride=stride, padding=padding, groups=in_channels)
+        self.pointwise = nn.Conv2d(in_channels*kernels_per_layer, out_channels, kernel_size=1, stride=1, padding=0, groups=1)
+    
+    def forward(self,x):
+        # print(x.size())
+        # print("x.device", x.device)
+        x = self.conv1(x)
+        # print(x.size())
+        x = self.pointwise(x)
+        # print(x.size())
+        return x
 
 class TheModelClass(nn.Module):
     def __init__(self):
@@ -80,3 +181,47 @@ for param_tensor in model.state_dict():
 
 print(model.state_dict()["conv1.bias"])
 print(model.state_dict()["conv3.bias"])
+
+net = RecNodeLayer(0,[1,2,3],8,1)
+print("RecNodeLayer's state_dict:")
+print(net.state_dict())
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
+
+x = torch.randn(64,8,16,16)
+
+net = net.to(device)
+x = x.to(device)
+
+print(x.size())
+y = net(x, 0)
+print(y.size())
+
+x = torch.randn(64,8,16,16,4)
+
+net = net.to(device)
+x = x.to(device)
+
+print("params:")
+for param in net.parameters():
+    print(param)
+
+print(x.size())
+y = net(x, 1)
+print(y.size())
+
+net = GraphLayer(64,5,nx.random_regular_graph(3,8,1))
+x = torch.randn(7,64,16,16)
+
+net = net.to(device)
+x = x.to(device)
+
+params = 0
+for p in net.parameters():
+    if p.requires_grad:
+        params += p.numel()
+        
+print(params)  # 121898
+
+y = net(x)
