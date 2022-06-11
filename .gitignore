@@ -3,3 +3,4 @@ __pycache__/
 nohup.out
 .trash/
 nohup*.out
+lab/test_load_save.pth
