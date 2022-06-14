@@ -236,6 +236,94 @@ class ResNet50(nn.Module):
 
         return x
         
+class RecResNet50(nn.Module):
+    def __init__(self, num_classes):
+        super(RecResNet50, self).__init__()
+
+        in_channels = 3
+        out_channels = 64
+        self.conv1 = nn.Conv2d(in_channels,out_channels,kernel_size=7,stride=2,padding=3)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.relu = nn.ReLU()
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.channels = out_channels
+
+        self.block2 = Block_ppc(in_channels=self.channels*4)
+        self.block3 = Block_ppc(in_channels=self.channels*8)
+        self.block4 = Block_ppc(in_channels=self.channels*16)
+        self.block5 = Block_ppc(in_channels=self.channels*32)
+
+        self.conv2 = nn.Sequential(
+            Block_ppc4(in_channels=self.channels),
+            self.block2,
+            self.block2,
+        )
+        
+        self.conv3 = nn.Sequential(
+            Block_phphc2(in_channels=self.channels*4),
+            self.block3,
+            self.block3,
+            self.block3,
+        )
+        
+        self.conv4 = nn.Sequential(
+            Block_phphc2(in_channels=self.channels*8),
+            self.block4,
+            self.block4,
+            self.block4,
+            self.block4,
+            self.block4,
+        )
+        
+        self.conv5 = nn.Sequential(
+            Block_phphc2(in_channels=self.channels*16),
+            self.block5,
+            self.block5,
+        )
+        
+        self.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        self.fc = nn.Linear(self.channels*32, num_classes)
+        
+    def forward(self, x):
+
+        ### CONV1 ####
+        # print("CONV1")
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        # print(x.size())
+
+        # print("CONV2")
+        ### CONV2 ####
+        x = self.maxpool(x)
+        x = self.conv2(x)
+        # print(x.size())
+
+        # print("CONV3")
+        ### CONV3 ###
+        x = self.conv3(x)
+        # print(x.size())
+        
+        # print("CONV4")
+        ### CONV4 ###
+        x = self.conv4(x)
+        # print(x.size())
+        
+        # print("CONV5")
+        ### CONV5 ###
+        x = self.conv5(x)
+        # print(x.size())
+        
+        x = self.avgpool(x)
+        # print(x.size())
+        x = x.reshape(x.shape[0], -1)
+        # print(x.size())
+        x = self.fc(x)
+        # print(x.size())
+
+        return x
+
 ################ Randomly Wired Neural Networks ####################
 class RWNN(nn.Module):
     def __init__(self, chn, cls, im, Gs):
@@ -456,6 +544,22 @@ if __name__ == "__main__":
     x = torch.randn(1,3,224,224)
     print(x.size())
     net = ResNet50(num_classes=1000)
+    params = 0
+    for p in net.parameters():
+        # print(p)
+        if p.requires_grad:
+            params += p.numel()
+            
+    print(params)  # 121898
+    
+
+    y = net(x)
+    print(y.size())
+
+    print("RecResNet50")
+    x = torch.randn(1,3,224,224)
+    print(x.size())
+    net = RecResNet50(num_classes=1000)
     params = 0
     for p in net.parameters():
         # print(p)

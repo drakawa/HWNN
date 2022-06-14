@@ -10,7 +10,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
-from net import RWNN, ResNet50
+from net import RWNN, RecResNet50, ResNet50
 from gen_graph import GConfig, GenGs
 import argparse
 
@@ -307,9 +307,22 @@ class EvalResNet50(EvalNet):
 
         self.net_name = "resnet50"
         
+class EvalRecResNet50(EvalNet):
+    def __init__(self):
+        super().__init__()
+
+        self.net = RecResNet50(num_classes=10)
+        self.num_epochs = 100
+
+        self.criterion = nn.CrossEntropyLoss()
+        self.optimizer = optim.SGD(self.net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.num_epochs)
+
+        self.net_name = "recresnet50"
+
 if __name__ == "__main__":
 
-    nets = ["rwnn", "resnet50"]
+    nets = ["rwnn", "resnet50", "recresnet50"]
     graphs_rwnn = ["rrg", "ws", "symsa", "2dtorus", "bipartite", "complete"]
     modes = ["train", "test", "param", "draw", "length"]
     methods = ["random", "bfs", "dfs"]
@@ -357,6 +370,8 @@ if __name__ == "__main__":
         eval_net = EvalRWNN(g_config)
     elif net == "resnet50":
         eval_net = EvalResNet50()
+    elif net == "recresnet50":
+        eval_net = EvalRecResNet50()
         
     if mode == "train":
         eval_net.train()
