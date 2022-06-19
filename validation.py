@@ -106,9 +106,11 @@ def accum_results():
 def get_plots(results_dd):
     plots_rec_dd = rec_dd()
 
-    label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "RWNN-symsa (OWNN)"}
-    graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
+    # label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "RWNN-symsa (OWNN)"}
+    label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "OWNN (proposed)"}
+    # graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
     # graphs = ["resnet50", "ws", "symsa"]
+    graphs = ["ws", "symsa"]
 
     for val in ["acc", "loss"]:
         for graph in graphs:
@@ -217,20 +219,40 @@ if __name__ == "__main__":
     plots_dd = get_plots(accum_results)
     # print(plots_dd)
 
-    # resnet50_acc = pd.DataFrame(accum_results["resnet50"]["acc"]).loc[:,:].describe().loc["mean"]
-    # rrg_acc = pd.DataFrame(accum_results["rrg"]["acc"]).loc[:,:].describe().loc["mean"]
-    # ws_acc = pd.DataFrame(accum_results["ws"]["acc"]).loc[:,:].describe().loc["mean"]
+    resnet50_acc = pd.DataFrame(accum_results["resnet50"]["acc"]).loc[:,:].describe().loc["mean"]
+    rrg_acc = pd.DataFrame(accum_results["rrg"]["acc"]).loc[:,:].describe().loc["mean"]
+    ws_acc = pd.DataFrame(accum_results["ws"]["acc"]).loc[:,:].describe().loc["mean"]
+    symsa_acc = pd.DataFrame(accum_results["symsa"]["acc"]).loc[:,:].describe().loc["mean"]
 
-    # print(resnet50_acc)
-    # print(rrg_acc)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
 
-    # rrg_resnet_rate = rrg_acc / resnet50_acc
+    print(resnet50_acc)
+    print(rrg_acc)
 
-    # pd.set_option('display.max_rows', None)
-    # pd.set_option('display.max_columns', None)
-    # print(rrg_resnet_rate[50:])
+    rrg_resnet_rate = rrg_acc / resnet50_acc
 
-    # rrg_ws_rate = rrg_acc / ws_acc
-    # print(rrg_ws_rate)
+    print(rrg_resnet_rate[50:])
 
-    # print(rrg_acc)
+    rrg_ws_rate = rrg_acc / ws_acc
+    print(rrg_ws_rate)
+
+    print(rrg_acc)
+
+    symsa_ws_rate = symsa_acc / ws_acc
+    print(symsa_ws_rate)
+    print(symsa_ws_rate.max())
+    print(symsa_ws_rate.idxmax())
+    print(symsa_ws_rate.nlargest(5))
+
+    ws_acc_std = pd.DataFrame(accum_results["ws"]["acc"]).loc[:,:].describe().loc["std"]
+    symsa_acc_std = pd.DataFrame(accum_results["symsa"]["acc"]).loc[:,:].describe().loc["std"]
+
+    print(ws_acc_std)
+    print(symsa_acc_std)
+
+    ws_loss_std = pd.DataFrame(accum_results["ws"]["loss"]).loc[:,:].describe().loc["std"]
+    symsa_loss_std = pd.DataFrame(accum_results["symsa"]["loss"]).loc[:,:].describe().loc["std"]
+
+    print(ws_loss_std)
+    print(symsa_loss_std)
