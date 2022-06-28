@@ -216,6 +216,7 @@ class EvalRWNN(EvalNet):
         if not os.path.isdir(figs_path):
             os.makedirs(figs_path)
 
+        print("saved to:", figs_path)
         DAGs, layDAG = self._gen_dag()
 
         for dag_idx, DAG in enumerate(DAGs):
@@ -292,7 +293,19 @@ class EvalRWNN(EvalNet):
 
         for len_DAG in len_DAGs:
             print(sorted(len_DAG.items()))
-        print(sorted(len_layDAG.items()))
+        len_layDAG_items = sorted(len_layDAG.items())
+        print(len_layDAG_items)
+
+        len_layDAG_x = [x for x,y in len_layDAG_items]
+        len_layDAG_y = [y for x,y in len_layDAG_items]
+
+        plt.cla()
+        plt.figure(figsize=(5,5))
+        plt.plot(len_layDAG_x, len_layDAG_y)
+        tmp_path = os.path.join(figs_path, "{}_{}.png".format(self.name, "length"))
+        print("saved:", tmp_path)
+        plt.savefig(tmp_path)
+        
 
 class EvalResNet50(EvalNet):
     def __init__(self):
