@@ -108,9 +108,9 @@ def get_plots(results_dd):
 
     # label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "RWNN-symsa (OWNN)"}
     label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "OWNN (proposed)"}
-    # graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
+    graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
     # graphs = ["resnet50", "ws", "symsa"]
-    graphs = ["ws", "symsa"]
+    # graphs = ["ws", "symsa"]
 
     for val in ["acc", "loss"]:
         for graph in graphs:
