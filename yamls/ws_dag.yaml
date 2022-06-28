@@ -3,16 +3,8 @@ graphs:
 nets:
 - rwnn
 reorder_method_revs:
-- - random
-  - false
-- - bfs
-  - false
-- - dfs
-  - false
-- - bfs
-  - true
-- - dfs
-  - true
+- - null
+  - null
 seeds:
 - 1
 - 2
