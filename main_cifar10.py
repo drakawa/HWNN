@@ -9,6 +9,7 @@ import networkx as nx
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
 
 from net import RWNN, RecResNet50, ResNet50
 from gen_graph import GConfig, GenGs
@@ -291,11 +292,20 @@ class EvalRWNN(EvalNet):
 
         len_layDAG = reduce(_accum_dds, len_DAGs)
 
+        def _calc_skew(len_dict):
+            x = list()
+            for len, count in len_dict.items():
+                for _ in range(count):
+                    x.append(len)
+            return stats.skew(x), stats.kurtosis(x)
+
         for len_DAG in len_DAGs:
             print(sorted(len_DAG.items()))
+            print(_calc_skew(len_DAG))
+
         len_layDAG_items = sorted(len_layDAG.items())
         print(len_layDAG_items)
-
+            
         len_layDAG_x = [x for x,y in len_layDAG_items]
         len_layDAG_y = [y for x,y in len_layDAG_items]
 
