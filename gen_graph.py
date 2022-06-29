@@ -87,8 +87,7 @@ class GenGs:
         self.num_graphs = 3
 
     def gen_Gs(self):
-        if self.config.s:
-            randstate = np.random.RandomState(self.config.s)
+        randstate = np.random.RandomState(self.config.s)
 
         if self.config.name == "2dtorus":
             name = f"2dtorus_{self.config.n}_{self.config.m}"
