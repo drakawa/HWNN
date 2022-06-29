@@ -290,18 +290,34 @@ class EvalRWNN(EvalNet):
                 result[ka + kb] += va * vb
             return result
 
-        len_layDAG = reduce(_accum_dds, len_DAGs)
-
         def _calc_skew(len_dict):
             x = list()
-            for len, count in len_dict.items():
+            for tmp_len, count in len_dict.items():
                 for _ in range(count):
-                    x.append(len)
-            return stats.skew(x), stats.kurtosis(x)
+                    x.append(tmp_len)
+            # print(len(x))
 
-        for len_DAG in len_DAGs:
-            print(sorted(len_DAG.items()))
-            print(_calc_skew(len_DAG))
+            total_len = 0
+            total_paths = 0
+
+            for tmp_len, count in len_dict.items():
+                total_len += tmp_len * count
+                total_paths += count
+
+            aspl = total_len / total_paths
+            return stats.skew(x), stats.kurtosis(x), aspl
+
+        len_layDAG = reduce(_accum_dds, len_DAGs)
+        skew, kurtosis, aspl = _calc_skew(len_layDAG)
+        print("Skew: {}".format(skew))
+        print("Kurtosis: {}".format(kurtosis))
+        print("ASPL: {}".format(aspl))
+
+        # for len_DAG in len_DAGs:
+        #     print(sorted(len_DAG.items()))
+        #     skew, kurtosis = _calc_skew(len_DAG)
+        #     print("Skew: {}".format(skew))
+        #     print("Kurtosis: {}".format(kurtosis))
 
         len_layDAG_items = sorted(len_layDAG.items())
         print(len_layDAG_items)

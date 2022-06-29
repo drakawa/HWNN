@@ -14,6 +14,8 @@ import matplotlib.scale as mscale
 import matplotlib.transforms as mtransforms
 import matplotlib.ticker as ticker
 
+import seaborn as sns
+
 os.environ['MKL_THREADING_LAYER'] = 'GNU'
 
 def dd_to_dict(d):
@@ -22,6 +24,40 @@ def dd_to_dict(d):
     return d
 
 rec_dd = lambda: dd(rec_dd)
+
+def get_skew_rwnn(g, s, r="naive"):
+    # pickle_path = os.path.join("./loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
+
+    pickle_path = os.path.join("./skew", "skew_rwnn_%s_%d_%s.pickle" % (g, s, r))
+
+
+    if os.path.exists(pickle_path):
+        with open(pickle_path, "rb") as f:
+            skew, kurtosis, aspl = pickle.load(f)
+    else:
+        script = "python main_cifar10.py -n rwnn -g %s -s %d -m length" % (g, s)
+        if r != "naive":
+            script += " -r %s" % r
+        print("Run script:\n", script)
+        
+        output = subprocess.check_output(script.split())
+        print(output)
+        rows = output.decode('utf-8').split("\n")
+        for row in rows:
+            print(row)
+            if "Skew" in row:
+                skew = float(row.rstrip().split()[-1])
+            elif "Kurtosis" in row:
+                kurtosis = float(row.rstrip().split()[-1])
+            elif "ASPL" in row:
+                aspl = float(row.rstrip().split()[-1])
+
+        print(skew, kurtosis, aspl)
+
+        with open(pickle_path, "wb") as f:
+            pickle.dump((skew, kurtosis, aspl), f)
+
+    return skew, kurtosis, aspl
 
 # main_cifar10.py [-h] [-n {rwnn,resnet50}] [-g {rrg,ws,symsa,2dtorus}] [-s SEED] [-m {train,test}] [-t TEST_CHKPT]
 def get_loss_acc_rwnn(g, s, chkpt_idx=100, r="naive"):
@@ -83,6 +119,31 @@ def get_loss_acc_resnet50(chkpt_idx=100):
 
     return avg_test_loss, top1_accuracy
 
+def accum_skews():
+    rwnn_graphs = ["ws","symsa"]
+    ids = list(range(1,11))
+    reorder_methods = ["naive", "random", "bfs"]
+
+    results = dict()
+    for g, i, r in it.product(rwnn_graphs, ids, reorder_methods):
+        results[(g,i,r)] = get_skew_rwnn(g,i,r)
+
+    for r in reorder_methods:
+        results[("2dtorus",1,r)] = get_skew_rwnn("2dtorus",1,r)
+
+    # print(results)
+
+    skews_rec_dd = rec_dd()
+    for (graph, id, rmethod), (skew, kurtosis, aspl) in results.items():
+        # print(graph, id, chkpt, loss, acc)
+        skews_rec_dd[graph]["skew"][rmethod][id] = skew
+        skews_rec_dd[graph]["kurtosis"][rmethod][id] = kurtosis
+        skews_rec_dd[graph]["aspl"][rmethod][id] = aspl
+
+    skews_dd = dd_to_dict(skews_rec_dd)
+
+    return skews_dd
+
 def accum_results():
     rwnn_graphs = ["ws","symsa"]
     chkpts = list(range(1,101))
@@ -114,28 +175,103 @@ def accum_results():
 
     return results_dd
 
+def gen_scatters(skews_dd, results_dd):
+    # print(skews_dd)
+    # print(results_dd)
+
+    metrices = ["skew", "kurtosis", "aspl"]
+    graphs = ["ws", "2dtorus", "symsa"]
+    rmethods = ["naive", "random", "bfs"]
+
+    chkpts = [10,25,50,100]
+    for chkpt in chkpts:
+        plots_rec_dd = rec_dd()
+        for graph in graphs:
+            for rmethod in rmethods:
+                for id, acc in results_dd[graph]["acc"][rmethod][chkpt].items():
+                    plots_rec_dd[graph][rmethod][id]["acc"] = acc
+                    for metric in metrices:
+                        plots_rec_dd[graph][rmethod][id][metric] = skews_dd[graph][metric][rmethod][id]
+
+        plots_dd = dd_to_dict(plots_rec_dd)
+        # print(plots_dd)
+
+        except_gr = [("2dtorus", "naive")]
+        for metric in metrices:
+            plt.cla()
+            fig, ax = plt.subplots()
+
+            
+            for graph in graphs:
+                for rmethod in rmethods:
+                    if (graph, rmethod) in except_gr:
+                        continue 
+                    xs = list()
+                    ys = list()
+                    for id in plots_dd[graph][rmethod]:
+                        xs.append(plots_dd[graph][rmethod][id][metric])
+                        ys.append(plots_dd[graph][rmethod][id]["acc"])
+                    # print(xs, ys)
+                    ax.scatter(xs, ys, label="{}-{}".format(graph, rmethod))
+            ax.set_xlabel(metric)
+            ax.set_ylabel("Top-1 Accuracy")
+
+            plt.savefig("skew_figs/skew_{}_{}.png".format(chkpt, metric))
+            plt.savefig("skew_figs/skew_{}_{}.eps".format(chkpt, metric))
+            # exit(1)
+
+        plt.cla()
+
+        new_graphs = ["ws", "symsa"]
+        new_metrices = ["skew", "kurtosis", "aspl"]
+        epochs = list(range(20,120,20))
+
+        df_dd = dd(list)
+
+        for graph in new_graphs:
+            for rmethod in rmethods:
+                for id in range(1,11):
+                    for epoch in epochs:
+                        df_dd["epoch={}".format(epoch)].append(results_dd[graph]["acc"][rmethod][epoch][id])
+                    df_dd["skew"].append(skews_dd[graph]["skew"][rmethod][id])
+                    df_dd["kurtosis"].append(skews_dd[graph]["kurtosis"][rmethod][id])
+                    df_dd["aspl"].append(skews_dd[graph]["aspl"][rmethod][id])
+
+
+        df = pd.DataFrame(df_dd)
+        df_corr = df.corr()
+        # print(df_corr)
+
+        new_df = df_corr.loc[new_metrices, ["epoch={}".format(epoch) for epoch in epochs]]
+        # print(new_df)
+
+        sns.heatmap(new_df, vmax=0.5, vmin=-0.5, center=0, cmap="seismic", annot=True, fmt=".4f")
+        plt.savefig("skew_figs/corr.png")
+        plt.savefig("skew_figs/corr.eps")
+
 def get_plots(results_dd):
     plots_rec_dd = rec_dd()
 
-    # label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "RWNN-symsa (OWNN)"}
-    label_dict = {"naive":"RWNN-naive", "random":"RWNN-random", "bfs":"RWNN-bfs"}
-    # graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
+    label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "resnet50": "ResNet-50", "symsa": "RWNN-symsa"}
+    # label_dict = {"naive":"RWNN-naive", "random":"RWNN-random", "bfs":"RWNN-bfs"}
+    graphs = ["resnet50", "ws",  "2dtorus", "symsa"]
     # graphs = ["resnet50", "ws", "symsa"]
-    graphs = ["ws"]
+    # graphs = ["ws"]
 
     for val in ["acc", "loss"]:
-        for graph, rmethod in it.product(graphs, label_dict):
-            print(val, graph)
+        for graph in graphs:
+            # print(val, graph)
+            rmethod = "naive"
             df = pd.DataFrame(results_dd[graph][val][rmethod]).loc[:, :]
             # print(df)
             # print(df.describe())
             # print(df.describe().loc["mean"])
             # print(df.columns)
             # print(df.index)
-            plots_rec_dd[val][rmethod]["x"] = list(df.columns)
-            plots_rec_dd[val][rmethod]["y"] = df.describe().loc["mean"].values.tolist()
-            plots_rec_dd[val][rmethod]["yerr"] = df.describe().loc["std"].values.tolist()
-            plots_rec_dd[val][rmethod]["label"] = label_dict[rmethod]
+            plots_rec_dd[val][graph]["x"] = list(df.columns)
+            plots_rec_dd[val][graph]["y"] = df.describe().loc["mean"].values.tolist()
+            plots_rec_dd[val][graph]["yerr"] = df.describe().loc["std"].values.tolist()
+            plots_rec_dd[val][graph]["label"] = label_dict[graph]
             # print(plots_rec_dd[val][graph])
             # print(df.describe().loc["mean"])
             # print(df.describe().loc["std"])
@@ -180,8 +316,11 @@ def get_plots(results_dd):
         plt.cla()
         fig, ax = plt.subplots()
 
-        for p_idx, rmethod in enumerate(label_dict):
-            values = plots_dd[val][rmethod]
+        # print(plots_dd)
+        # print(plots_dd["acc"].keys())
+        # for p_idx, graph in enumerate(label_dict):
+        for p_idx, graph in enumerate(graphs):
+            values = plots_dd[val][graph]
             # print(values)
             ax.errorbar(values["x"], values["y"], yerr = values["yerr"], color=cmap(p_idx + 1), capsize=10, fmt=next(fmts), label=values["label"], markersize=10)
         ax.plot()
@@ -208,11 +347,30 @@ def get_plots(results_dd):
     # ax.set_ylabel("Elapsed time [s]")
     # ax.set_ylim([0.0,70])
 
-        plt.savefig("figs/%s_swopp.eps" % val, transparent=False)
-        plt.savefig("figs/%s_swopp.png" % val, transparent=False)
-        plt.savefig("figs/%s_swopp.svg" % val, transparent=True)
+        plt.savefig("figs/%s_swopp2.eps" % val, transparent=False)
+        plt.savefig("figs/%s_swopp2.png" % val, transparent=False)
+        plt.savefig("figs/%s_swopp2.svg" % val, transparent=True)
 
     return plots_dd
+
+def gen_table_rmethod(df):
+    acc_rec_dd = rec_dd()
+    graphs = ["ws", "2dtorus", "symsa"]
+    rmethods = ["naive", "random", "bfs"]
+
+    for graph, rmethod in it.product(graphs, rmethods):
+        tmp_acc_mean = pd.DataFrame(accum_results[graph]["acc"][rmethod]).loc[:,:].describe().loc["mean"][100]
+        tmp_acc_std = pd.DataFrame(accum_results[graph]["acc"][rmethod]).loc[:,:].describe().loc["std"][100]
+        if np.isnan(tmp_acc_std):
+            tmp_acc_std = 0.0
+        print(graph, rmethod, tmp_acc_mean, tmp_acc_std)
+        acc_rec_dd[graph][rmethod] = "${:.4f} \pm {:.4f}$".format(tmp_acc_mean, tmp_acc_std)
+
+    acc_dd = dd_to_dict(acc_rec_dd)
+    print(acc_dd)
+    acc_df = pd.DataFrame(data=acc_dd)
+    print(acc_df)
+    print(acc_df.style.to_latex())
 
 if __name__ == "__main__":
     # print(get_loss_acc_rwnn("ws", 1))
@@ -224,16 +382,25 @@ if __name__ == "__main__":
     # print(get_loss_acc_rwnn("ws", 1, 10))
     # print(get_loss_acc_resnet50(10))
 
-    accum_results = accum_results()
-    print(accum_results)
+    # print(get_skew_rwnn("ws", 1))
+    accum_skews = accum_skews()
+    # print(accum_skews)
 
-    exit(1)
+    accum_results = accum_results()
+    # print(accum_results)
+    # print(accum_results.keys())
+
+    gen_scatters(accum_skews, accum_results)
+    # exit(1)
 
     plots_dd = get_plots(accum_results)
     # print(plots_dd)
 
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
+
+    gen_table_rmethod(accum_results)
+    exit(1)
 
     naive_acc_bare = pd.DataFrame(accum_results["ws"]["acc"]["naive"])
     print(naive_acc_bare.loc[:,100])
