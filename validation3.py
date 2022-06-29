@@ -14,6 +14,8 @@ import matplotlib.scale as mscale
 import matplotlib.transforms as mtransforms
 import matplotlib.ticker as ticker
 
+import matplotlib
+
 import seaborn as sns
 
 os.environ['MKL_THREADING_LAYER'] = 'GNU'
@@ -176,6 +178,19 @@ def accum_results():
     return results_dd
 
 def gen_scatters(skews_dd, results_dd):
+    plt.rcParams["font.size"] = 32
+    plt.rcParams["figure.figsize"] = [10.0, 8.0]
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
+
+    plt.rcParams["legend.edgecolor"] = "black"
+    plt.rcParams["legend.facecolor"] = "white"
+    plt.rcParams["legend.framealpha"] = 1.0
+    plt.rcParams["legend.labelspacing"] = 0.05
+
+    plt.rcParams["font.family"] = ["Times New Roman"]
+    plt.rcParams["savefig.bbox"] = "tight"
+
     # print(skews_dd)
     # print(results_dd)
 
@@ -200,7 +215,6 @@ def gen_scatters(skews_dd, results_dd):
         for metric in metrices:
             plt.cla()
             fig, ax = plt.subplots()
-
             
             for graph in graphs:
                 for rmethod in rmethods:
@@ -215,39 +229,56 @@ def gen_scatters(skews_dd, results_dd):
                     ax.scatter(xs, ys, label="{}-{}".format(graph, rmethod))
             ax.set_xlabel(metric)
             ax.set_ylabel("Top-1 Accuracy")
+            ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
+            # fig.subplots_adjust(left=0.15, right=0.7)
             plt.savefig("skew_figs/skew_{}_{}.png".format(chkpt, metric))
             plt.savefig("skew_figs/skew_{}_{}.eps".format(chkpt, metric))
             # exit(1)
 
-        plt.cla()
+    plt.rcParams.update(matplotlib.rcParamsDefault)
 
-        new_graphs = ["ws", "symsa"]
-        new_metrices = ["skew", "kurtosis", "aspl"]
-        epochs = list(range(20,120,20))
+    plt.rcParams["font.size"] = 20
+    plt.rcParams["figure.figsize"] = [10.0, 8.0]
+    plt.rcParams['pdf.fonttype'] = 42
+    plt.rcParams['ps.fonttype'] = 42
 
-        df_dd = dd(list)
+    plt.rcParams["legend.edgecolor"] = "black"
+    plt.rcParams["legend.facecolor"] = "white"
+    plt.rcParams["legend.framealpha"] = 1.0
+    plt.rcParams["legend.labelspacing"] = 0.05
 
-        for graph in new_graphs:
-            for rmethod in rmethods:
-                for id in range(1,11):
-                    for epoch in epochs:
-                        df_dd["epoch={}".format(epoch)].append(results_dd[graph]["acc"][rmethod][epoch][id])
-                    df_dd["skew"].append(skews_dd[graph]["skew"][rmethod][id])
-                    df_dd["kurtosis"].append(skews_dd[graph]["kurtosis"][rmethod][id])
-                    df_dd["aspl"].append(skews_dd[graph]["aspl"][rmethod][id])
+    plt.rcParams["savefig.bbox"] = "tight"
+    plt.rcParams["font.family"] = ["Times New Roman"]
+
+    plt.cla()
+
+    new_graphs = ["ws", "symsa"]
+    new_metrices = ["skew", "kurtosis", "aspl"]
+    epochs = list(range(20,120,20))
+
+    df_dd = dd(list)
+
+    for graph in new_graphs:
+        for rmethod in rmethods:
+            for id in range(1,11):
+                for epoch in epochs:
+                    df_dd["epoch={}".format(epoch)].append(results_dd[graph]["acc"][rmethod][epoch][id])
+                df_dd["skew"].append(skews_dd[graph]["skew"][rmethod][id])
+                df_dd["kurtosis"].append(skews_dd[graph]["kurtosis"][rmethod][id])
+                df_dd["aspl"].append(skews_dd[graph]["aspl"][rmethod][id])
 
 
-        df = pd.DataFrame(df_dd)
-        df_corr = df.corr()
-        # print(df_corr)
+    df = pd.DataFrame(df_dd)
+    df_corr = df.corr()
+    # print(df_corr)
 
-        new_df = df_corr.loc[new_metrices, ["epoch={}".format(epoch) for epoch in epochs]]
-        # print(new_df)
+    new_df = df_corr.loc[new_metrices, ["epoch={}".format(epoch) for epoch in epochs]]
+    # print(new_df)
 
-        sns.heatmap(new_df, vmax=0.5, vmin=-0.5, center=0, cmap="seismic", annot=True, fmt=".4f")
-        plt.savefig("skew_figs/corr.png")
-        plt.savefig("skew_figs/corr.eps")
+    sns.heatmap(new_df, vmax=0.5, vmin=-0.5, center=0, cmap="seismic", annot=True, fmt=".4f")
+    plt.savefig("skew_figs/corr.png")
+    plt.savefig("skew_figs/corr.eps")
 
 def get_plots(results_dd):
     plots_rec_dd = rec_dd()
@@ -390,6 +421,20 @@ if __name__ == "__main__":
     # print(accum_results)
     # print(accum_results.keys())
 
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+
+    ws_naive_acc_avg = pd.DataFrame(accum_results["ws"]["acc"]["naive"]).loc[:,:].describe().loc["mean"]
+    symsa_naive_acc_avg = pd.DataFrame(accum_results["symsa"]["acc"]["naive"]).loc[:,:].describe().loc["mean"]
+    print(ws_naive_acc_avg)
+    print(symsa_naive_acc_avg)
+
+
+    ws_symsa_naive_avg_rate = symsa_naive_acc_avg / ws_naive_acc_avg
+    print(ws_symsa_naive_avg_rate)
+    print(ws_symsa_naive_avg_rate.nlargest(10))
+
+
     gen_scatters(accum_skews, accum_results)
     # exit(1)
 
@@ -400,6 +445,7 @@ if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
 
     gen_table_rmethod(accum_results)
+    
     exit(1)
 
     naive_acc_bare = pd.DataFrame(accum_results["ws"]["acc"]["naive"])
