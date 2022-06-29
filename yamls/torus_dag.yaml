@@ -1,0 +1,11 @@
+graphs:
+- 2dtorus
+nets:
+- rwnn
+reorder_method_revs:
+- - random
+  - false
+- - bfs
+  - false
+seeds:
+- 1
