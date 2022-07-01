@@ -28,9 +28,9 @@ def dd_to_dict(d):
 rec_dd = lambda: dd(rec_dd)
 
 def get_skew_rwnn(g, s, r="naive"):
-    # pickle_path = os.path.join("./loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
+    # pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
 
-    pickle_path = os.path.join("./skew", "skew_rwnn_%s_%d_%s.pickle" % (g, s, r))
+    pickle_path = os.path.join("./savefile/skew", "skew_rwnn_%s_%d_%s.pickle" % (g, s, r))
 
 
     if os.path.exists(pickle_path):
@@ -63,9 +63,9 @@ def get_skew_rwnn(g, s, r="naive"):
 
 # main_cifar10.py [-h] [-n {rwnn,resnet50}] [-g {rrg,ws,symsa,2dtorus}] [-s SEED] [-m {train,test}] [-t TEST_CHKPT]
 def get_loss_acc_rwnn(g, s, chkpt_idx=100, r="naive"):
-    # pickle_path = os.path.join("./loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
+    # pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
 
-    pickle_path = os.path.join("./loss_acc", "loss_acc_rwnn_%s_%d_%s_%d.pickle" % (g, s, r, chkpt_idx))
+    pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_rwnn_%s_%d_%s_%d.pickle" % (g, s, r, chkpt_idx))
 
 
     if os.path.exists(pickle_path):
@@ -95,7 +95,7 @@ def get_loss_acc_rwnn(g, s, chkpt_idx=100, r="naive"):
     return avg_test_loss, top1_accuracy
 
 def get_loss_acc_resnet50(chkpt_idx=100):
-    pickle_path = os.path.join("./loss_acc", "loss_acc_resnet50_%d.pickle" % chkpt_idx)
+    pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_resnet50_%d.pickle" % chkpt_idx)
 
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
@@ -232,8 +232,8 @@ def gen_scatters(skews_dd, results_dd):
             ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
 
             # fig.subplots_adjust(left=0.15, right=0.7)
-            plt.savefig("skew_figs/skew_{}_{}.png".format(chkpt, metric))
-            plt.savefig("skew_figs/skew_{}_{}.eps".format(chkpt, metric))
+            plt.savefig("./fig/skew/skew_{}_{}.png".format(chkpt, metric))
+            plt.savefig("./fig/skew/skew_{}_{}.eps".format(chkpt, metric))
             # exit(1)
 
     plt.rcParams.update(matplotlib.rcParamsDefault)
@@ -277,8 +277,8 @@ def gen_scatters(skews_dd, results_dd):
     # print(new_df)
 
     sns.heatmap(new_df, vmax=0.5, vmin=-0.5, center=0, cmap="seismic", annot=True, fmt=".4f")
-    plt.savefig("skew_figs/corr.png")
-    plt.savefig("skew_figs/corr.eps")
+    plt.savefig("./fig/skew/corr.png")
+    plt.savefig("./fig/skew/corr.eps")
 
 def get_plots(results_dd):
     plots_rec_dd = rec_dd()
@@ -378,9 +378,9 @@ def get_plots(results_dd):
     # ax.set_ylabel("Elapsed time [s]")
     # ax.set_ylim([0.0,70])
 
-        plt.savefig("figs/%s_swopp2.eps" % val, transparent=False)
-        plt.savefig("figs/%s_swopp2.png" % val, transparent=False)
-        plt.savefig("figs/%s_swopp2.svg" % val, transparent=True)
+        plt.savefig("fig/loss_acc/%s_swopp2.eps" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s_swopp2.png" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s_swopp2.svg" % val, transparent=True)
 
     return plots_dd
 

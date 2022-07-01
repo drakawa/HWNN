@@ -25,7 +25,7 @@ rec_dd = lambda: dd(rec_dd)
 
 # main_cifar10.py [-h] [-n {rwnn,resnet50}] [-g {rrg,ws,symsa,2dtorus}] [-s SEED] [-m {train,test}] [-t TEST_CHKPT]
 def get_loss_acc_rwnn(g, s, chkpt_idx=100):
-    pickle_path = os.path.join("./loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
+    pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_rwnn_%s_%d_%d.pickle" % (g, s, chkpt_idx))
 
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
@@ -52,7 +52,7 @@ def get_loss_acc_rwnn(g, s, chkpt_idx=100):
     return avg_test_loss, top1_accuracy
 
 def get_loss_acc_resnet50(chkpt_idx=100):
-    pickle_path = os.path.join("./loss_acc", "loss_acc_resnet50_%d.pickle" % chkpt_idx)
+    pickle_path = os.path.join("./savefile/loss_acc", "loss_acc_resnet50_%d.pickle" % chkpt_idx)
 
     if os.path.exists(pickle_path):
         with open(pickle_path, "rb") as f:
@@ -197,9 +197,9 @@ def get_plots(results_dd):
     # ax.set_ylabel("Elapsed time [s]")
     # ax.set_ylim([0.0,70])
 
-        plt.savefig("figs/%s.eps" % val, transparent=False)
-        plt.savefig("figs/%s.png" % val, transparent=False)
-        plt.savefig("figs/%s.svg" % val, transparent=True)
+        plt.savefig("fig/loss_acc/%s.eps" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s.png" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s.svg" % val, transparent=True)
 
     return plots_dd
 
