@@ -12,7 +12,7 @@ if __name__ == "__main__":
     rm_revs = [("random", False), ("bfs", False)]
 
     obj = {"nets": ns, "graphs": gs, "seeds": ss, "reorder_method_revs": rm_revs}
-    yaml_filename = "./yamls/symsa_dag2.yaml"
+    yaml_filename = "./yamls/symsa_dag.yaml"
 
     with open(yaml_filename, "w") as f:
         yaml.safe_dump(obj, f)

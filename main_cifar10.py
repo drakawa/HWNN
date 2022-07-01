@@ -213,7 +213,7 @@ class EvalRWNN(EvalNet):
         return DAGs, layDAG
 
     def draw(self):
-        figs_path = "./figs/{}/".format(self.net_name)
+        figs_path = "./fig/DAG/{}/".format(self.net_name)
         if not os.path.isdir(figs_path):
             os.makedirs(figs_path)
 
@@ -257,7 +257,7 @@ class EvalRWNN(EvalNet):
         plt.show()
 
     def length(self):
-        figs_path = "./figs/{}/".format(self.net_name)
+        figs_path = "./fig/DAG/{}/".format(self.net_name)
         if not os.path.isdir(figs_path):
             os.makedirs(figs_path)
 

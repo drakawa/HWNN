@@ -114,7 +114,7 @@ class GenGs:
             else:
                 name += "_" + self.config.method + "_" + "rev"
             
-        graph_path = os.path.join("./graphs", name + ".edges")
+        graph_path = os.path.join("./savefile/edgefile", name + ".edges")
         if os.path.exists(graph_path):
             Gs = pd.read_pickle(graph_path)
         else:
