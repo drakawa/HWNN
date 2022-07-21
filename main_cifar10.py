@@ -221,11 +221,41 @@ class EvalRWNN(EvalNet):
         DAGs, layDAG = self._gen_dag()
 
         for dag_idx, DAG in enumerate(DAGs):
+            vmin=0
+            vmax = len(DAG) * 4
+            # node_color = tuple([len(DAG)] + [len(DAG) * 2 + i for i in range(len(DAG))][1:])
+            DAG_nodes = list(DAG.nodes())
+            print(DAG_nodes)
+            node_color = tuple([len(DAG) * 3 - i[1] for i in DAG_nodes])
+            # node_color = tuple([len(DAG) * 3 - i for i in range(len(DAG))])
+            cmap="RdBu"
+            print(node_color)
+
+            # draw G
+            plt.cla()
+            plt.figure(figsize=(15,15))
+            tmp_G = self.Gs[dag_idx]
+            print(tmp_G.nodes, tmp_G.edges)
+            pos = nx.circular_layout(DAG)
+            pos = {e[1]: pos[e] for e in DAG_nodes}
+            # pos = {e: pos[i] for i,e in enumerate(tmp_G.nodes())}
+            print(pos)
+            nx.draw_networkx_nodes(tmp_G, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
+            nx.draw_networkx_edges(
+                tmp_G, pos,
+                # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
+            )
+            plt.axis("off")
+            plt.tight_layout()
+            plt.savefig(os.path.join(figs_path, "G_{}_{}.png".format(self.name, dag_idx)))
+            plt.savefig(os.path.join(figs_path, "G_{}_{}.eps".format(self.name, dag_idx)))
+            plt.savefig(os.path.join(figs_path, "G_{}_{}.svg".format(self.name, dag_idx)))
+
             # draw a DAG
             plt.cla()
             plt.figure(figsize=(15,15))
             pos = nx.drawing.nx_agraph.graphviz_layout(DAG, prog="dot")
-            nx.draw_networkx_nodes(DAG, pos, node_color="lightblue")
+            nx.draw_networkx_nodes(DAG, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
             nx.draw_networkx_edges(
                 DAG, pos,
                 # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
@@ -236,7 +266,7 @@ class EvalRWNN(EvalNet):
             plt.savefig(os.path.join(figs_path, "DAG_{}_{}.png".format(self.name, dag_idx)))
             plt.savefig(os.path.join(figs_path, "DAG_{}_{}.eps".format(self.name, dag_idx)))
             plt.savefig(os.path.join(figs_path, "DAG_{}_{}.svg".format(self.name, dag_idx)))
-            plt.show()
+            # plt.show()
 
 
         # draw a layers
@@ -254,7 +284,7 @@ class EvalRWNN(EvalNet):
         plt.savefig(os.path.join(figs_path, "layers_{}.png".format(self.name)))
         plt.savefig(os.path.join(figs_path, "layers_{}.eps".format(self.name)))
         plt.savefig(os.path.join(figs_path, "layers_{}.svg".format(self.name)))
-        plt.show()
+        # plt.show()
 
     def length(self):
         figs_path = "./fig/DAG/{}/".format(self.net_name)
