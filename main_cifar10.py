@@ -224,10 +224,13 @@ class EvalRWNN(EvalNet):
             vmin=0
             vmax = len(DAG) * 4
             # node_color = tuple([len(DAG)] + [len(DAG) * 2 + i for i in range(len(DAG))][1:])
-            DAG_nodes = list(DAG.nodes())
+            DAG_nodes = list(DAG)
             print(DAG_nodes)
-            node_color = tuple([len(DAG) * 3 - i[1] for i in DAG_nodes])
-            # node_color = tuple([len(DAG) * 3 - i for i in range(len(DAG))])
+            print("DAG.edges:", DAG.edges)
+            print("G.edges:", self.Gs[dag_idx].edges)
+            print("G.nodes:", self.Gs[dag_idx].nodes)
+            # node_color = tuple([len(DAG) * 3 - DAG_nodes.index(i) for i in DAG_nodes])
+            node_color = tuple([len(DAG) * 3 - e[1] for e in DAG_nodes])
             cmap="RdBu"
             print(node_color)
 
@@ -237,10 +240,11 @@ class EvalRWNN(EvalNet):
             tmp_G = self.Gs[dag_idx]
             print(tmp_G.nodes, tmp_G.edges)
             pos = nx.circular_layout(DAG)
-            pos = {e[1]: pos[e] for e in DAG_nodes}
+            pos = {i: pos[e] for i, e in enumerate(DAG_nodes)}
             # pos = {e: pos[i] for i,e in enumerate(tmp_G.nodes())}
             print(pos)
             nx.draw_networkx_nodes(tmp_G, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
+            nx.draw_networkx_labels(tmp_G, pos)
             nx.draw_networkx_edges(
                 tmp_G, pos,
                 # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
@@ -256,6 +260,7 @@ class EvalRWNN(EvalNet):
             plt.figure(figsize=(15,15))
             pos = nx.drawing.nx_agraph.graphviz_layout(DAG, prog="dot")
             nx.draw_networkx_nodes(DAG, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
+            nx.draw_networkx_labels(DAG, pos)
             nx.draw_networkx_edges(
                 DAG, pos,
                 # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
