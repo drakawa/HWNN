@@ -244,7 +244,7 @@ class EvalRWNN(EvalNet):
             # pos = {e: pos[i] for i,e in enumerate(tmp_G.nodes())}
             print(pos)
             nx.draw_networkx_nodes(tmp_G, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
-            nx.draw_networkx_labels(tmp_G, pos)
+            # nx.draw_networkx_labels(tmp_G, pos)
             nx.draw_networkx_edges(
                 tmp_G, pos,
                 # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
@@ -260,7 +260,7 @@ class EvalRWNN(EvalNet):
             plt.figure(figsize=(15,15))
             pos = nx.drawing.nx_agraph.graphviz_layout(DAG, prog="dot")
             nx.draw_networkx_nodes(DAG, pos, node_color=node_color, cmap=cmap, vmin=vmin, vmax=vmax)
-            nx.draw_networkx_labels(DAG, pos)
+            # nx.draw_networkx_labels(DAG, pos)
             nx.draw_networkx_edges(
                 DAG, pos,
                 # connectionstyle="arc3,rad=0.1"  # <-- THIS IS IT
