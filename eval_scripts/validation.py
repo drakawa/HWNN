@@ -256,3 +256,6 @@ if __name__ == "__main__":
 
     print(ws_loss_std)
     print(symsa_loss_std)
+
+    symsa_resnet50_acc_rate = symsa_acc / resnet50_acc
+    print(1-symsa_resnet50_acc_rate[100])

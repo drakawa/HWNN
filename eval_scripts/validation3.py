@@ -178,7 +178,7 @@ def accum_results():
     return results_dd
 
 def gen_scatters(skews_dd, results_dd):
-    plt.rcParams["font.size"] = 32
+    plt.rcParams["font.size"] = 48
     plt.rcParams["figure.figsize"] = [10.0, 8.0]
     plt.rcParams['pdf.fonttype'] = 42
     plt.rcParams['ps.fonttype'] = 42
@@ -238,7 +238,7 @@ def gen_scatters(skews_dd, results_dd):
 
     plt.rcParams.update(matplotlib.rcParamsDefault)
 
-    plt.rcParams["font.size"] = 20
+    plt.rcParams["font.size"] = 30
     plt.rcParams["figure.figsize"] = [10.0, 8.0]
     plt.rcParams['pdf.fonttype'] = 42
     plt.rcParams['ps.fonttype'] = 42
@@ -311,7 +311,7 @@ def get_plots(results_dd):
 
     # plt.style.use(['science', "ieee"])
 
-    plt.rcParams["font.size"] = 32
+    plt.rcParams["font.size"] = 48
     plt.rcParams["figure.figsize"] = [36.0, 9.0]
     plt.rcParams["lines.linewidth"] = 1.0
     plt.rcParams["lines.markeredgewidth"] = 1.0
