@@ -107,8 +107,9 @@ def get_plots(results_dd):
     plots_rec_dd = rec_dd()
 
     # label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN-ws", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "RWNN-symsa (OWNN)"}
-    label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "OWNN (proposed)"}
-    graphs = ["resnet50", "2dtorus", "ws", "rrg", "symsa"]
+    # label_dict = {"2dtorus": "RWNN-2d_torus", "ws": "RWNN", "rrg": "RWNN-rrg", "resnet50": "ResNet-50", "symsa": "OWNN (proposed)"}
+    label_dict = {"ws": "RWNN", "resnet50": "ResNet-50", "symsa": "OWNN (proposed)"}
+    graphs = ["resnet50", "ws", "symsa"]
     # graphs = ["resnet50", "ws", "symsa"]
     # graphs = ["ws", "symsa"]
 
@@ -133,7 +134,7 @@ def get_plots(results_dd):
 
     # plt.style.use(['science', "ieee"])
 
-    plt.rcParams["font.size"] = 32
+    plt.rcParams["font.size"] = 48
     plt.rcParams["figure.figsize"] = [36.0, 9.0]
     plt.rcParams["lines.linewidth"] = 1.0
     plt.rcParams["lines.markeredgewidth"] = 1.0
@@ -158,7 +159,7 @@ def get_plots(results_dd):
     if False:
         print(plt.rcParams.keys())
 
-    fmts_orig = ["->", "-^", "-v", ":s", "--o"]
+    fmts_orig = ["-v", "->", "-^", ":s", "--o"]
 
     cmap = plt.get_cmap("Dark2")
 
@@ -172,7 +173,7 @@ def get_plots(results_dd):
         for p_idx, graph in enumerate(graphs):
             values = plots_dd[val][graph]
             # print(values)
-            ax.errorbar(values["x"], values["y"], yerr = values["yerr"], color=cmap(p_idx + 1), capsize=10, fmt=next(fmts), label=values["label"], markersize=10)
+            ax.errorbar(values["x"], values["y"], yerr = values["yerr"], color=cmap(p_idx), capsize=10, fmt=next(fmts), label=values["label"], markersize=10)
         ax.plot()
         ax.legend()
         ax.grid()
@@ -197,9 +198,9 @@ def get_plots(results_dd):
     # ax.set_ylabel("Elapsed time [s]")
     # ax.set_ylim([0.0,70])
 
-        plt.savefig("fig/loss_acc/%s.eps" % val, transparent=False)
-        plt.savefig("fig/loss_acc/%s.png" % val, transparent=False)
-        plt.savefig("fig/loss_acc/%s.svg" % val, transparent=True)
+        plt.savefig("fig/loss_acc/%s_fit.eps" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s_fit.png" % val, transparent=False)
+        plt.savefig("fig/loss_acc/%s_fit.svg" % val, transparent=True)
 
     return plots_dd
 
