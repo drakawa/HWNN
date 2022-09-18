@@ -404,7 +404,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NN for CIFAR-10')
     parser.add_argument('-n', '--net', type=str, help='Net name', choices=nets)
     parser.add_argument('-g', '--graph_rwnn', type=str, help='Graph name used in RWNN', choices=graphs_rwnn, required=False)
-    parser.add_argument('-s', '--seed', type=int, help='Random seed used in RWNN', required=False)
+    parser.add_argument('-s', '--seed', type=int, default=1, help='Random seed used in RWNN', required=False)
     parser.add_argument('-r', '--reorder_method', type=str, help='Mode for reorder labels', choices=methods, required=False)
     parser.add_argument('--rev', action='store_true', help='labels reversed')
     parser.add_argument('-m', '--mode', type=str, help='Mode for net', choices=modes)
