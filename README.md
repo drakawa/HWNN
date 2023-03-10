@@ -14,7 +14,7 @@ $ python main_cifar10.py -n rwnn -g ws -m train
 
 - test for epoch #100
 ```
-$ python main_cifar_10.py -n rwnn -m test
+$ python main_cifar10.py -n rwnn -g ws -m test
 ```
 
 # Optiamlly Wired Neural Network (point-symmetrical graph)
